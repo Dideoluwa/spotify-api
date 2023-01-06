@@ -63,7 +63,7 @@ app.get("/callback", (req, res) => {
         const { refresh_token } = response.data;
         axios
           .get(
-            `http://localhost:8080/refresh_token?refresh_token=${refresh_token}`,
+            `https://spotifyapi-production.up.railway.app/refresh_token?refresh_token=${refresh_token}`,
             {
               headers: {
                 Authorization: `${token_type} ${access_token}`,
