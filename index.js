@@ -37,13 +37,18 @@ app.get("/login", (req, res) => {
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
+  res.set({
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Origin": "*",
+  });
+
   const scope = "user-read-private user-read-email";
   const queryParams = querystring.stringify({
     client_id: client_id,
     response_type: "code",
     redirect_uri: redirect_uri,
   });
-  window.location = `https://accounts.spotify.com/authorize?${queryParams}`;
+  res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
 });
 
 app.get("/callback", (req, res) => {
