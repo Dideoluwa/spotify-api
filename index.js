@@ -43,7 +43,7 @@ app.get("/login", (req, res) => {
     response_type: "code",
     redirect_uri: redirect_uri,
   });
-  res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
+  window.location = `https://accounts.spotify.com/authorize?${queryParams}`;
 });
 
 app.get("/callback", (req, res) => {
