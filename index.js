@@ -35,8 +35,7 @@ app.get("/login", (req, res) => {
 
   res.set({
     "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Origin":
-      "https://spotifyapi-production.up.railway.app/login",
+    "Access-Control-Allow-Origin": "*",
   });
 
   const scope = "user-read-private user-read-email";
