@@ -2,29 +2,20 @@ const express = require("express");
 const app = express();
 const querystring = require("querystring");
 const axios = require("axios");
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 const cors = require("cors");
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(cookieParser());
-app.use(cors());
 require("dotenv").config();
 
 const redirect_uri = process.env.redirect_uri;
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
 
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
-
 console.log("Come here");
+
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 app.get("/", (req, res) => {
   res.send("hello world");
@@ -67,7 +58,6 @@ app.get("/callback", (req, res) => {
       redirect_uri: redirect_uri,
     }),
     headers: {
-      "Access-Control-Allow-Origin": "*",
       "content-type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${new Buffer.from(
         `${client_id}:${client_secret}`
