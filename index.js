@@ -13,7 +13,7 @@ console.log("Come here");
 
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:3001",
   })
 );
 
@@ -39,7 +39,7 @@ app.get("/login", (req, res) => {
 
   res.set({
     "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": "http://localhost:3001",
   });
 
   const scope = "user-read-private user-read-email";
