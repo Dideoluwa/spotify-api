@@ -33,10 +33,16 @@ app.get("/login", (req, res) => {
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
-  res.set({
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Origin": "*",
-  });
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type,X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name"
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,HEAD,DELETE,OPTIONS"
+  );
+  res.header("Access-Control-Allow-Credentials", true);
 
   const scope = "user-read-private user-read-email";
   const queryParams = querystring.stringify({
