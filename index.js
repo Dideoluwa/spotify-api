@@ -33,23 +33,23 @@ app.get("/login", (req, res) => {
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type,X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name"
-  );
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET,POST,PUT,HEAD,DELETE,OPTIONS"
-  );
-
   const scope = "user-read-private user-read-email";
-  const queryParams = querystring.stringify({
-    client_id: client_id,
-    response_type: "code",
-    redirect_uri: redirect_uri,
-  });
-  res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
+  res.redirect(
+    "https://accounts.spotify.com/authorize?" +
+      querystring.stringify({
+        response_type: "code",
+        client_id: client_id,
+        scope: scope,
+        redirect_uri: redirect_uri,
+        state: state,
+      })
+  );
+  // const queryParams = querystring.stringify({
+  //   client_id: client_id,
+  //   response_type: "code",
+  //   redirect_uri: redirect_uri,
+  // });
+  // res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
 });
 
 app.get("/callback", (req, res) => {
