@@ -3,12 +3,21 @@ const app = express();
 const querystring = require("querystring");
 const axios = require("axios");
 require("dotenv").config();
+const cors = require("cors");
 
 const redirect_uri = process.env.redirect_uri;
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
 
 console.log("Come here");
+
+const corsOptions = {
+  origin: "*",
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
   res.send("hello world");
