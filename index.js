@@ -58,6 +58,7 @@ app.get("/callback", (req, res) => {
       redirect_uri: redirect_uri,
     }),
     headers: {
+      "Access-Control-Allow-Origin": "*",
       "content-type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${new Buffer.from(
         `${client_id}:${client_secret}`
@@ -73,6 +74,7 @@ app.get("/callback", (req, res) => {
             `https://spotifyapi-production.up.railway.app/refresh_token?refresh_token=${refresh_token}`,
             {
               headers: {
+                "Access-Control-Allow-Origin": "*",
                 Authorization: `${token_type} ${access_token}`,
               },
             }
@@ -103,6 +105,7 @@ app.get("/refresh_token", (req, res) => {
       refresh_token: refresh_token,
     }),
     headers: {
+      "Access-Control-Allow-Origin": "*",
       "content-type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${new Buffer.from(
         `${client_id}:${client_secret}`
