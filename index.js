@@ -13,7 +13,7 @@ console.log("Come here");
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://spotifyapi-production.up.railway.app/login",
   })
 );
 
@@ -39,7 +39,7 @@ app.get("/login", (req, res) => {
 
   res.set({
     "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Origin": "http://localhost:3000",
+    "Access-Control-Allow-Origin": "https://spotifyapi-production.up.railway.app/login",
   });
 
   const scope = "user-read-private user-read-email";
@@ -63,7 +63,6 @@ app.get("/callback", (req, res) => {
       redirect_uri: redirect_uri,
     }),
     headers: {
-      "Access-Control-Allow-Origin": "*",
       "content-type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${new Buffer.from(
         `${client_id}:${client_secret}`
