@@ -34,22 +34,13 @@ app.get("/login", (req, res) => {
   res.cookie(stateKey, state);
 
   const scope = "user-read-private user-read-email";
-  res.redirect(
-    "https://accounts.spotify.com/authorize?" +
-      querystring.stringify({
-        response_type: "code",
-        client_id: client_id,
-        scope: scope,
-        redirect_uri: redirect_uri,
-        state: state,
-      })
-  );
-  // const queryParams = querystring.stringify({
-  //   client_id: client_id,
-  //   response_type: "code",
-  //   redirect_uri: redirect_uri,
-  // });
-  // res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
+  const queryParams = querystring.stringify({
+    client_id: client_id,
+    response_type: "code",
+    redirect_uri: redirect_uri,
+  });
+  res.header("Access-Control-Allow-Origin", "*");
+  res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
 });
 
 app.get("/callback", (req, res) => {
@@ -110,7 +101,6 @@ app.get("/refresh_token", (req, res) => {
       refresh_token: refresh_token,
     }),
     headers: {
-      "Access-Control-Allow-Origin": "*",
       "content-type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${new Buffer.from(
         `${client_id}:${client_secret}`
