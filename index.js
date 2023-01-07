@@ -42,7 +42,6 @@ app.get("/login", (req, res) => {
     "Access-Control-Allow-Methods",
     "GET,POST,PUT,HEAD,DELETE,OPTIONS"
   );
-  res.header("Access-Control-Allow-Credentials", true);
 
   const scope = "user-read-private user-read-email";
   const queryParams = querystring.stringify({
