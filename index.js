@@ -11,11 +11,7 @@ const client_secret = process.env.client_secret;
 
 console.log("Come here");
 
-app.use(
-  cors({
-    origin: "https://spotifyapi-production.up.railway.app/login",
-  })
-);
+app.use(cors());
 
 app.get("/", (req, res) => {
   res.send("hello world");
@@ -39,7 +35,8 @@ app.get("/login", (req, res) => {
 
   res.set({
     "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Origin": "https://spotifyapi-production.up.railway.app/login",
+    "Access-Control-Allow-Origin":
+      "https://spotifyapi-production.up.railway.app/login",
   });
 
   const scope = "user-read-private user-read-email";
