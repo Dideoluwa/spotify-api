@@ -39,7 +39,6 @@ app.get("/login", (req, res) => {
     response_type: "code",
     redirect_uri: redirect_uri,
   });
-  res.header("Access-Control-Allow-Origin", "*");
   res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
 });
 
@@ -63,26 +62,16 @@ app.get("/callback", (req, res) => {
   })
     .then((response) => {
       if (response.status === 200) {
-        const { access_token, token_type } = response.data;
-        const { refresh_token } = response.data;
-        axios
-          .get(
-            `https://spotifyapi-production.up.railway.app/refresh_token?refresh_token=${refresh_token}`,
-            {
-              headers: {
-                "Access-Control-Allow-Origin": "*",
-                Authorization: `${token_type} ${access_token}`,
-              },
-            }
-          )
-          .then((response) => {
-            res.send(`<pre>${JSON.stringify(response.data, null, 2)}</pre>`);
-          })
-          .catch((error) => {
-            res.send(error);
-          });
+        const { access_token, refresh_token } = response.data;
+
+        const queryParams = querystring.stringify({
+          access_token,
+          refresh_token,
+        });
+
+        res.redirect(`http://localhost:3000/?${queryParams}`);
       } else {
-        res.send(response);
+        res.redirect(`/?${querystring.stringify({ error: "invalid_token" })}`);
       }
     })
     .catch((error) => {
@@ -115,6 +104,6 @@ app.get("/refresh_token", (req, res) => {
     });
 });
 
-app.listen(process.env.PORT || 8080, () => {
-  console.log("listening on port 8080");
+app.listen(process.env.PORT || 8000, () => {
+  console.log("listening on port 8000");
 });
