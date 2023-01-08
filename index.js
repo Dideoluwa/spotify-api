@@ -33,11 +33,13 @@ app.get("/login", (req, res) => {
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
-  const scope = "user-read-private user-read-email";
+  const scope =
+    "user-read-private user-read-email ugc-image-upload user-read-playback-state user-read-currently-playing user-modify-playback-state app-remote-control streaming playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-read-playback-position user-top-read user-read-recently-played user-library-modify user-library-read";
   const queryParams = querystring.stringify({
     client_id: client_id,
     response_type: "code",
     redirect_uri: redirect_uri,
+    scope: scope,
   });
   res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
 });
