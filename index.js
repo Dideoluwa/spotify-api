@@ -8,7 +8,7 @@ require("dotenv").config();
 const redirect_uri = process.env.redirect_uri;
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
-let token = [];
+// let token = [];
 
 console.log("Come here");
 
@@ -17,6 +17,57 @@ app.use(cors());
 app.get("/", (req, res) => {
   res.send("hello world");
 });
+
+setInterval(() => {
+  axios({
+    url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/token.json`,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((response) => {
+    if (response.status === 200) {
+      console.log(response.data);
+      axios({
+        method: "post",
+        url: "https://accounts.spotify.com/api/token",
+        data: querystring.stringify({
+          grant_type: "refresh_token",
+          refresh_token: response.data.refresh_token,
+        }),
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${new Buffer.from(
+            `${client_id}:${client_secret}`
+          ).toString("base64")}`,
+        },
+      })
+        .then((res) => {
+          axios({
+            method: "put",
+            url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/access.json`,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            data: JSON.stringify({
+              access_token: res.data.access_token,
+            }),
+          }).then((res) => {
+            if (res.status === 200) {
+              // console.log("Good");
+            } else {
+              console.log(res.data);
+            }
+          });
+          console.log(res.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      console.log(response.data);
+    }
+  });
+}, 3600000);
 
 const generateRandomString = (length) => {
   let text = "";
@@ -74,7 +125,7 @@ app.get("/callback", (req, res) => {
           },
         }).then((response) => {
           if (response.status === 200) {
-            // console.log(response.data.id);
+            console.log(response.data.id);
             if (response.data.id === "d39gx8ozqkgr68gmjcfay2gzx") {
               console.log("true");
               axios({
@@ -95,39 +146,59 @@ app.get("/callback", (req, res) => {
                 }
               });
             }
-          } else {
-            console.log(response);
           }
-          axios({
-            url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/token.json`,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }).then((response) => {
-            if (response.status === 200) {
-              // console.log(response.data);
-              token.push(response.data);
-              // console.log(token[0].refresh_token);
-              const queryParams = querystring.stringify({
-                access_token: token[0].access_token,
-                refresh_token: token[0].refresh_token,
-              });
-              res.redirect(`http://localhost:3000/?${queryParams}`);
-            } else {
-              console.log(response.data);
-            }
-          });
-          // axios
-          // .get(
-          //   `http://localhost:8000/refresh_token?refresh_token=${refresh_token}`
-          // )
-          // .then((response) => {
-          //   res.send(`<pre>${JSON.stringify(response.data, null, 2)}</pre>`);
-          // })
-          // .catch((error) => {
-          //   res.send(error);
-          // });
         });
+        // axios({
+        //   url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/token.json`,
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        // }).then((response) => {
+        //   if (response.status === 200) {
+        //     const queryParams = querystring.stringify({
+        //       access_token: response.data.access_token,
+        //       refresh_token: response.data.refresh_token,
+        //     });
+        //     res.redirect(`http://localhost:3000/?${queryParams}`);
+        //   } else {
+        //     console.log(response.data);
+        //   }
+        // });
+        // } else {
+        //   console.log(res);
+        // axios({
+        //   url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/token.json`,
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        // }).then((response) => {
+        //   if (response.status === 200) {
+        //
+        //   }
+        // });
+        // }
+        // } else {
+        // console.log(response);
+        // }
+        // }
+        // else {
+        //     console.log(response.data);
+        // axios
+        // .get(
+        //   `http://localhost:8000/refresh_token?refresh_token=${refresh_token}`
+        // )
+        // .then((response) => {
+        //   res.send(`<pre>${JSON.stringify(response.data, null, 2)}</pre>`);
+        // })
+        // .catch((error) => {
+        //   res.send(error);
+        // });
+        // });
+        const queryParams = querystring.stringify({
+          access_token,
+          refresh_token,
+        });
+        res.redirect(`http://localhost:3000/?${queryParams}`);
       } else {
         res.redirect(`/?${querystring.stringify({ error: "invalid_token" })}`);
       }
@@ -138,28 +209,42 @@ app.get("/callback", (req, res) => {
 });
 
 app.get("/refresh_token", (req, res) => {
-  const { refresh_token } = req.query;
-
-  axios({
-    method: "post",
-    url: "https://accounts.spotify.com/api/token",
-    data: querystring.stringify({
-      grant_type: "refresh_token",
-      refresh_token: refresh_token,
-    }),
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${new Buffer.from(
-        `${client_id}:${client_secret}`
-      ).toString("base64")}`,
-    },
-  })
-    .then((response) => {
-      res.send(response.data);
-    })
-    .catch((error) => {
-      res.send(error);
+  // const { refresh_token } = req.query;
+  setInterval(() => {
+    axios({
+      url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/token.json`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((response) => {
+      if (response.status === 200) {
+        console.log(response.data);
+        axios({
+          method: "post",
+          url: "https://accounts.spotify.com/api/token",
+          data: querystring.stringify({
+            grant_type: "refresh_token",
+            refresh_token: response.data.refresh_token,
+          }),
+          headers: {
+            "content-type": "application/x-www-form-urlencoded",
+            Authorization: `Basic ${new Buffer.from(
+              `${client_id}:${client_secret}`
+            ).toString("base64")}`,
+          },
+        })
+          .then((response) => {
+            console.log(response.data);
+            res.send(response.data);
+          })
+          .catch((error) => {
+            res.send(error);
+          });
+      } else {
+        console.log(response.data);
+      }
     });
+  }, 5000);
 });
 
 app.listen(process.env.PORT || 8000, () => {
