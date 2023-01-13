@@ -148,52 +148,6 @@ app.get("/callback", (req, res) => {
             }
           }
         });
-        // axios({
-        //   url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/token.json`,
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        // }).then((response) => {
-        //   if (response.status === 200) {
-        //     const queryParams = querystring.stringify({
-        //       access_token: response.data.access_token,
-        //       refresh_token: response.data.refresh_token,
-        //     });
-        //     res.redirect(`http://localhost:3000/?${queryParams}`);
-        //   } else {
-        //     console.log(response.data);
-        //   }
-        // });
-        // } else {
-        //   console.log(res);
-        // axios({
-        //   url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/token.json`,
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        // }).then((response) => {
-        //   if (response.status === 200) {
-        //
-        //   }
-        // });
-        // }
-        // } else {
-        // console.log(response);
-        // }
-        // }
-        // else {
-        //     console.log(response.data);
-        // axios
-        // .get(
-        //   `http://localhost:8000/refresh_token?refresh_token=${refresh_token}`
-        // )
-        // .then((response) => {
-        //   res.send(`<pre>${JSON.stringify(response.data, null, 2)}</pre>`);
-        // })
-        // .catch((error) => {
-        //   res.send(error);
-        // });
-        // });
         const queryParams = querystring.stringify({
           access_token,
           refresh_token,
