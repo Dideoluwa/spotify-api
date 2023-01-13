@@ -8,7 +8,7 @@ require("dotenv").config();
 const redirect_uri = process.env.redirect_uri;
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
-let token = []
+let token = [];
 
 console.log("Come here");
 
@@ -83,7 +83,10 @@ app.get("/callback", (req, res) => {
                 headers: {
                   "Content-Type": "application/json",
                 },
-                data: JSON.stringify(access_token),
+                data: JSON.stringify({
+                  access_token: access_token,
+                  refresh_token: refresh_token,
+                }),
               }).then((res) => {
                 if (res.status === 200) {
                   console.log("Good");
@@ -100,20 +103,30 @@ app.get("/callback", (req, res) => {
             headers: {
               "Content-Type": "application/json",
             },
-          }).then((res) => {
-            if (res.status === 200) {
-              // console.log(res.data);
-              token.push(res.data)
-              // console.log(token[0])
-            } else{
-              console.log(res.data)
+          }).then((response) => {
+            if (response.status === 200) {
+              // console.log(response.data);
+              token.push(response.data);
+              // console.log(token[0].refresh_token);
+              const queryParams = querystring.stringify({
+                access_token: token[0].access_token,
+                refresh_token: token[0].refresh_token,
+              });
+              res.redirect(`http://localhost:3000/?${queryParams}`);
+            } else {
+              console.log(response.data);
             }
           });
-          const queryParams = querystring.stringify({
-            access_token: token[0],
-            refresh_token,
-          });
-          res.redirect(`http://localhost:3000/?${queryParams}`);
+          // axios
+          // .get(
+          //   `http://localhost:8000/refresh_token?refresh_token=${refresh_token}`
+          // )
+          // .then((response) => {
+          //   res.send(`<pre>${JSON.stringify(response.data, null, 2)}</pre>`);
+          // })
+          // .catch((error) => {
+          //   res.send(error);
+          // });
         });
       } else {
         res.redirect(`/?${querystring.stringify({ error: "invalid_token" })}`);
