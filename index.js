@@ -8,6 +8,7 @@ require("dotenv").config();
 const redirect_uri = process.env.redirect_uri;
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
+let token = []
 
 console.log("Come here");
 
@@ -65,13 +66,55 @@ app.get("/callback", (req, res) => {
     .then((response) => {
       if (response.status === 200) {
         const { access_token, refresh_token } = response.data;
-
-        const queryParams = querystring.stringify({
-          access_token,
-          refresh_token,
+        axios({
+          url: `https://api.spotify.com/v1/me`,
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+            "Content-Type": "application/json",
+          },
+        }).then((response) => {
+          if (response.status === 200) {
+            // console.log(response.data.id);
+            if (response.data.id === "d39gx8ozqkgr68gmjcfay2gzx") {
+              console.log("true");
+              axios({
+                method: "put",
+                url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/token.json`,
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                data: JSON.stringify(access_token),
+              }).then((res) => {
+                if (res.status === 200) {
+                  console.log("Good");
+                } else {
+                  console.log(res.data);
+                }
+              });
+            }
+          } else {
+            console.log(response);
+          }
+          axios({
+            url: `https://darasimioni-fe448-default-rtdb.firebaseio.com/token.json`,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).then((res) => {
+            if (res.status === 200) {
+              // console.log(res.data);
+              token.push(res.data)
+              // console.log(token[0])
+            } else{
+              console.log(res.data)
+            }
+          });
+          const queryParams = querystring.stringify({
+            access_token: token[0],
+            refresh_token,
+          });
+          res.redirect(`http://localhost:3000/?${queryParams}`);
         });
-
-        res.redirect(`http://localhost:3000/?${queryParams}`);
       } else {
         res.redirect(`/?${querystring.stringify({ error: "invalid_token" })}`);
       }
