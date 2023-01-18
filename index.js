@@ -4,15 +4,18 @@ const querystring = require("querystring");
 const axios = require("axios");
 const cors = require("cors");
 require("dotenv").config();
+let alert = require("alert");
 
 const redirect_uri = process.env.redirect_uri;
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
 const token_url = process.env.token_url;
-
-console.log("Come here");
+const access_url = process.env.access_url;
 
 app.use(cors());
+
+let currDate = +Date.now();
+let now = Date.now();
 
 app.get("/", (req, res) => {
   res.send("hello world");
@@ -36,80 +39,97 @@ app.get("/current-playing", (req, res) => {
     headers: {
       "Content-Type": "application/json",
     },
-  }).then((response) => {
-    if (response.status === 200) {
-      if (response.data.expires_in < Date.now()) {
-        axios({
-          method: "post",
-          url: "https://accounts.spotify.com/api/token",
-          data: querystring.stringify({
-            grant_type: "refresh_token",
-            refresh_token: response.data.refresh_token,
-          }),
-          headers: {
-            "content-type": "application/x-www-form-urlencoded",
-            Authorization: `Basic ${new Buffer.from(
-              `${client_id}:${client_secret}`
-            ).toString("base64")}`,
-          },
-        })
-          .then((response) => {
-            const expiryTime = Date.now() + response.data.expires_in;
+  }).then((tokenRes) => {
+    if (tokenRes.status === 200) {
+      axios({
+        url: access_url,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((DbResponse) => {
+        if (DbResponse.status === 200) {
+          if (tokenRes.data.expiryTime > now) {
+            console.log(tokenRes.data.expiryTime);
             axios({
-              method: "put",
-              url: token_url,
+              url: `https://api.spotify.com/v1/me/player/recently-played`,
               headers: {
+                Authorization: `Bearer ${tokenRes.data.access_token}`,
                 "Content-Type": "application/json",
               },
-              data: JSON.stringify({
-                access_token: response.data.access_token,
-                refresh_token: response.data.refresh_token,
-                expiryTime: expiryTime,
-              }),
-            }).then((res) => {
-              if (res.status === 200) {
-                axios({
-                  url: `https://api.spotify.com/v1/me/player/recently-played`,
-                  headers: {
-                    Authorization: `Bearer ${response.data.access_token}`,
-                    "Content-Type": "application/json",
-                  },
-                }).then((currListSong) => {
-                  if (currListSong.status === 200) {
-                    res.status(200).send(currListSong.data.items[0].track);
-                  } else {
-                    res.status(400).json({
-                      message: `Error occured`,
-                    });
-                    console.log(currListSong);
-                  }
+            }).then((trackResponse) => {
+              if (trackResponse.status === 200) {
+                res.status(200).send(trackResponse.data.items[0].track);
+              } else {
+                res.status(400).json({
+                  message: `Error occured`,
                 });
               }
             });
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      } else {
-        axios({
-          url: `https://api.spotify.com/v1/me/player/recently-played`,
-          headers: {
-            Authorization: `Bearer ${response.data.access_token}`,
-            "Content-Type": "application/json",
-          },
-        }).then((response) => {
-          if (response.status === 200) {
-            res.status(200).send(response.data.items[0].track);
-          } else {
-            res.status(400).json({
-              message: `Error occured`,
-            });
-            console.log(response);
           }
-        });
-      }
+          if (tokenRes.data.expiryTime < now) {
+            axios({
+              method: "post",
+              url: "https://accounts.spotify.com/api/token",
+              data: querystring.stringify({
+                grant_type: "refresh_token",
+                refresh_token: DbResponse.data.refresh_token,
+              }),
+              headers: {
+                "content-type": "application/x-www-form-urlencoded",
+                Authorization: `Basic ${new Buffer.from(
+                  `${client_id}:${client_secret}`
+                ).toString("base64")}`,
+              },
+            })
+              .then((response) => {
+                if (response.status === 200) {
+                  const { access_token } = response.data;
+                  let expiredTime = currDate + 3600;
+                  axios({
+                    method: "put",
+                    url: token_url,
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    data: JSON.stringify({
+                      access_token: access_token,
+                      expiryTime: expiredTime,
+                    }),
+                  }).then((putRes) => {
+                    if (putRes.status === 200) {
+                      axios({
+                        url: `https://api.spotify.com/v1/me/player/recently-played`,
+                        headers: {
+                          Authorization: `Bearer ${access_token}`,
+                          "Content-Type": "application/json",
+                        },
+                      }).then((currListSong) => {
+                        if (currListSong.status === 200) {
+                          res
+                            .status(200)
+                            .send(currListSong.data.items[0].track);
+                        } else {
+                          res.status(400).json({
+                            message: `Error occured`,
+                          });
+                        }
+                      });
+                    }
+                  });
+                } else {
+                  console.log(response.expires_in);
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          }
+        } else {
+          console.log(DbResponse);
+        }
+      });
     } else {
-      console.log(response);
+      console.log(tokenRes);
     }
   });
 });
@@ -150,7 +170,8 @@ app.get("/callback", (req, res) => {
     .then((response) => {
       if (response.status === 200) {
         const { access_token, refresh_token, expires_in } = response.data;
-        const expiryTime = Date.now() + expires_in;
+        let time = Date.now();
+        let expiryTime = time + expires_in;
         axios({
           url: `https://api.spotify.com/v1/me`,
           headers: {
@@ -161,10 +182,9 @@ app.get("/callback", (req, res) => {
           if (response.status === 200) {
             console.log(response.data.id);
             if (response.data.id === "d39gx8ozqkgr68gmjcfay2gzx") {
-              console.log("true");
               axios({
                 method: "put",
-                url: token_url,
+                url: access_url,
                 headers: {
                   "Content-Type": "application/json",
                 },
@@ -175,7 +195,6 @@ app.get("/callback", (req, res) => {
                 }),
               }).then((res) => {
                 if (res.status === 200) {
-                  console.log("Good");
                 } else {
                   console.log(res.data);
                 }
@@ -199,7 +218,7 @@ app.get("/callback", (req, res) => {
 
 app.get("/refresh_token", (req, res) => {
   axios({
-    url: process.env.token_url,
+    url: access_url,
     headers: {
       "Content-Type": "application/json",
     },
@@ -221,6 +240,19 @@ app.get("/refresh_token", (req, res) => {
         },
       })
         .then((response) => {
+          let timer = Date.now();
+          let expiryTime = timer + response.data.expires_in;
+          axios({
+            method: "put",
+            url: token_url,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            data: JSON.stringify({
+              access_token: response.data.access_token,
+              expiryTime: expiryTime,
+            }),
+          });
           console.log(response.data);
           res.send(response.data);
         })
