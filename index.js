@@ -4,7 +4,6 @@ const querystring = require("querystring");
 const axios = require("axios");
 const cors = require("cors");
 require("dotenv").config();
-let alert = require("alert");
 
 const redirect_uri = process.env.redirect_uri;
 const client_id = process.env.client_id;
@@ -33,7 +32,7 @@ const generateRandomString = (length) => {
 
 const stateKey = "spotify_auth_state";
 
-app.get("/current-playing", (req, res) => {
+app.get("/current-playing", async (req, res) => {
   axios({
     url: token_url,
     headers: {
@@ -49,7 +48,6 @@ app.get("/current-playing", (req, res) => {
       }).then((DbResponse) => {
         if (DbResponse.status === 200) {
           if (tokenRes.data.expiryTime > now) {
-            console.log(tokenRes.data.expiryTime);
             axios({
               url: `https://api.spotify.com/v1/me/player/recently-played`,
               headers: {
