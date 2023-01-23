@@ -32,7 +32,7 @@ const generateRandomString = (length) => {
 
 const stateKey = "spotify_auth_state";
 
-app.get("/current-playing", async (req, res) => {
+app.get("/currently-playing", async (req, res) => {
   axios({
     url: token_url,
     headers: {
@@ -179,7 +179,7 @@ app.get("/callback", (req, res) => {
         }).then((response) => {
           if (response.status === 200) {
             console.log(response.data.id);
-            if (response.data.id === "d39gx8ozqkgr68gmjcfay2gzx") {
+            if (response.data.id === "22tlod5b4sujuk2jxfja6cjjy") {
               axios({
                 method: "put",
                 url: access_url,
