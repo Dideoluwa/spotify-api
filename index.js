@@ -15,9 +15,6 @@ const accountBaseUrl = `https://accounts.spotify.com/api`;
 
 app.use(cors());
 
-let currDate = +Date.now();
-let now = Date.now();
-
 app.get("/", (req, res) => {
   res.send("hello world");
 });
@@ -156,6 +153,8 @@ const getInitAccessToken = (payload) => {
 };
 
 app.get("/currently-playing", async (req, res) => {
+  const now = Date.now();
+  const currDate = +Date.now();
   try {
     const accessToken = await getAccessToken();
     const refreshToken = await getRefreshToken();
