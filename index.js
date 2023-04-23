@@ -9,6 +9,7 @@ const redirect_uri = process.env.redirect_uri;
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
 const token_url = process.env.token_url;
+const token_url2 = process.env.token_url2;
 const access_url = process.env.access_url;
 const base_url = `https://api.spotify.com/v1/me/player`;
 const accountBaseUrl = `https://accounts.spotify.com/api`;
@@ -52,6 +53,16 @@ const getAccessToken = () => {
   return accessTokenResponse;
 };
 
+const getAccessToken2 = () => {
+  const accessTokenResponse = axios({
+    url: token_url2,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return accessTokenResponse;
+};
+
 const getRefreshToken = () => {
   const refreshTokenRes = axios({
     url: access_url,
@@ -84,6 +95,17 @@ const fetchCurrPlayingSong = (payload) => {
   return res;
 };
 
+const mixtape = (payload) => {
+  const res = axios({
+    url: `https://api.spotify.com/v1/playlists/37i9dQZF1EVHGWrwldPRtj`,
+    headers: {
+      Authorization: `Bearer ${payload}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return res;
+};
+
 const getNewAccessToken = (payload) => {
   const res = axios({
     method: "post",
@@ -106,6 +128,21 @@ const postNewAccessToken = (payload) => {
   const res = axios({
     method: "put",
     url: token_url,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: JSON.stringify({
+      access_token: payload.access_token,
+      expiryTime: payload.expiredTime,
+    }),
+  });
+  return res;
+};
+
+const postNewAccessToken2 = (payload) => {
+  const res = axios({
+    method: "put",
+    url: token_url2,
     headers: {
       "Content-Type": "application/json",
     },
@@ -151,6 +188,40 @@ const getInitAccessToken = (payload) => {
   });
   return res;
 };
+
+app.get("/mixtape", async (req, res) => {
+  const now = Date.now();
+  const currDate = +Date.now();
+  try {
+    const accessToken = await getAccessToken2();
+    const refreshToken = await getRefreshToken();
+    if (accessToken.data.expiryTime > now) {
+      const mixtapeRes = await mixtape(accessToken.data.access_token);
+      if (mixtapeRes.status === 200) {
+        res.status(200).send(mixtapeRes.data);
+      }
+    }
+    if (accessToken.data.expiryTime < now) {
+      const getNewAccess = await getNewAccessToken({
+        refresh_token: refreshToken.data.refresh_token2,
+      });
+      const { access_token } = getNewAccess.data;
+      let expiredTime = currDate + 3600;
+      const postNewAccess = await postNewAccessToken2({
+        access_token: access_token,
+        expiredTime: expiredTime,
+      });
+      if (postNewAccess.status === 200) {
+        const mixtapeRes = await mixtape(access_token);
+        if (mixtapeRes.status === 200) {
+          res.status(200).send(mixtapeRes.data);
+        }
+      }
+    }
+  } catch (error) {
+    console.log(error.response);
+  }
+});
 
 app.get("/currently-playing", async (req, res) => {
   const now = Date.now();
