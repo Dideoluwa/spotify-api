@@ -206,7 +206,7 @@ app.get("/mixtape", async (req, res) => {
         refresh_token: refreshToken.data.refresh_token2,
       });
       const { access_token } = getNewAccess.data;
-      let expiredTime = currDate + 3600;
+      let expiredTime = currDate + 3600000;
       const postNewAccess = await postNewAccessToken2({
         access_token: access_token,
         expiredTime: expiredTime,
@@ -249,7 +249,7 @@ app.get("/currently-playing", async (req, res) => {
         refresh_token: refreshToken.data.refresh_token,
       });
       const { access_token } = getNewAccess.data;
-      let expiredTime = currDate + 3600;
+      let expiredTime = currDate + 3600000;
       const postNewAccess = await postNewAccessToken({
         access_token: access_token,
         expiredTime: expiredTime,
